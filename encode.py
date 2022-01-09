@@ -16,7 +16,8 @@ def rgb2ycbcr(im):
     return np.uint8(ycbcr)
 
 file = input("Enter the path to the image: ")
-img = np.asarray(Image.open(file))
+imgfile = Image.open(file).convert('RGB')
+img = np.asarray(imgfile)
 img_yuv = rgb2ycbcr(img) 
 y_bit = input("Enter the number of bits for Y' (default is 4): ")
 y_bit = 4 if y_bit == "" else int(y_bit) # from https://stackoverflow.com/questions/13710631/is-there-shorthand-for-returning-a-default-value-if-none-in-python

@@ -47,14 +47,6 @@ def fs_dither(img, nc):
 
     carr = np.array(arr/np.max(arr, axis=(0,1)) * nc, dtype=np.uint8)
     return np.array(carr)
-def palette_reduce(img, nc):
-    """Simple palette reduction without dithering."""
-    arr = np.array(img, dtype=float) / 255
-    arr = get_new_val(arr, nc)
-
-    carr = np.array(arr/np.max(arr) * nc, dtype=np.uint8)
-    return np.array(carr)
-
 
 file = input("Enter the path to the image: ")
 img = np.asarray(Image.open(file))
@@ -63,21 +55,25 @@ y_bit = input("Enter the number of bits for Y' (default is 4): ")
 y_bit = 4 if y_bit == "" else int(y_bit) # from https://stackoverflow.com/questions/13710631/is-there-shorthand-for-returning-a-default-value-if-none-in-python
 cbcr_bit = 8 - y_bit
 
-dither = bool(int(input("Do you want to dither? (Takes a while to compute) [0 or 1]: ")))
+dithery = input("Do you want to dither Y'? (Takes a while to compute) [y or n]: ")
+ditherc = input("Do you want to dither CbCr? (Takes a while to compute) [y or n]: ")
 
 # Scale the range to fit bit ratio and maybe dither
-if dither:
+if dithery == "y":
     print("Dithering Y'...")
     y = fs_dither(img_yuv[:,:,0],(2**y_bit)-1)
+    print("Finished dithering Y'.")
+else:
+    y = np.uint8(img_yuv[:,:,0]*(((2**y_bit)-1)/255))
+if ditherc == "y":    
     print("Dithering Cb...")
     cb = fs_dither(img_yuv[:,:,1],(2**cbcr_bit)-1)
     print("Dithering Cr...")
     cr = fs_dither(img_yuv[:,:,2],(2**cbcr_bit)-1)
-    print("Finished dithering.")
+    print("Finished dithering CbCr.")
 else:
-    y = palette_reduce(img_yuv[:,:,0],(2**y_bit)-1)
-    cb = palette_reduce(img_yuv[:,:,1],(2**cbcr_bit)-1)
-    cr = palette_reduce(img_yuv[:,:,2],(2**cbcr_bit)-1)
+    cb = np.uint8(img_yuv[:,:,1]*(((2**cbcr_bit)-1)/255))
+    cr = np.uint8(img_yuv[:,:,2]*(((2**cbcr_bit)-1)/255))
 
 # Interlace Cb and Cr
 c = np.stack((cb[:,::2],cr[:,1::2]), axis=-1).reshape(y.shape)
@@ -85,7 +81,7 @@ c = np.stack((cb[:,::2],cr[:,1::2]), axis=-1).reshape(y.shape)
 # Allocate Y' to MSB and Cb/Cr in LSB
 composite = (y << cbcr_bit) + c
 out = Image.fromarray(composite)
-if dither:
+if dithery or ditherc:
     out.save(file[:-4]+"_b-w_dither.png", "PNG")
 else:
     out.save(file[:-4]+"_b-w.png", "PNG")

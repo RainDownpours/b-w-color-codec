@@ -32,7 +32,8 @@ are written after Sun Jan  9 3:43:40 2022.
 file = input("Enter the path to the image: ")
 imgfile = Image.open(file).convert('L')
 img = np.asarray(imgfile)
-y_bit = int(input("Enter the number of bits for Y': "))
+y_bit = input("Enter the number of bits for Y' (default is 4): ")
+y_bit = 4 if y_bit == "" else int(y_bit) # from https://stackoverflow.com/questions/13710631/is-there-shorthand-for-returning-a-default-value-if-none-in-python
 cbcr_bit = 8 - y_bit
 
 # Seperate Cb and Cr

@@ -66,18 +66,16 @@ if dithery == "y":
     print("Finished dithering Y'.")
 else:
     y = np.uint8(img_yuv[:,:,0]*(((2**y_bit)-1)/255))
-if ditherc == "y":    
-    print("Dithering Cb...")
-    cb = fs_dither(img_yuv[:,:,1],(2**cbcr_bit)-1)
-    print("Dithering Cr...")
-    cr = fs_dither(img_yuv[:,:,2],(2**cbcr_bit)-1)
-    print("Finished dithering CbCr.")
-else:
-    cb = np.uint8(img_yuv[:,:,1]*(((2**cbcr_bit)-1)/255))
-    cr = np.uint8(img_yuv[:,:,2]*(((2**cbcr_bit)-1)/255))
 
 # Interlace Cb and Cr
-c = np.stack((cb[:,::2],cr[:,1::2]), axis=-1).reshape(y.shape)
+cbcr = np.stack((img_yuv[:,::2,1],img_yuv[:,1::2,2]), axis=-1).reshape(y.shape)
+
+if ditherc == "y":    
+    print("Dithering CbCr...")
+    c = fs_dither(cbcr,(2**cbcr_bit)-1)
+    print("Finished dithering CbCr.")
+else:
+    c = np.uint8(cbcr*(((2**cbcr_bit)-1)/255))
 
 # Allocate Y' to MSB and Cb/Cr in LSB
 composite = (y << cbcr_bit) + c

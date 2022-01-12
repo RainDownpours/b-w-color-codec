@@ -45,7 +45,7 @@ def fs_dither(img, nc):
                 if ic < img.shape[1] - 1:
                     arr[ir+1, ic+1] += err / 16
 
-    carr = np.array(arr/np.max(arr, axis=(0,1)) * nc, dtype=np.uint8)
+    carr = np.array(arr * nc, dtype=np.uint8)
     return np.array(carr)
 
 file = input("Enter the path to the image: ")
